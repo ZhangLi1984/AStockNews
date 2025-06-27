@@ -51,12 +51,24 @@ jobs:
           
           # 检查是否有变动
           git diff --staged --quiet || {
-            # 先拉取最新更改
+            # 先获取远程变更
+            git fetch origin main
+            
+            # 保存当前的修改
+            git stash
+            
+            # 拉取最新更改
             git pull --rebase origin main
+            
+            # 恢复之前的修改
+            git stash pop || true
+            
+            # 重新添加文件
+            git add "financial_news_archive-*.csv"
             
             # 提交更改
             git commit -m "财经新闻自动更新 $(date +'%Y-%m-%d %H:%M:%S')"
             
-            # 将提交推送到你的仓库
-            git push
+            # 将提交推送到你的仓库，如果失败则尝试强制推送
+            git push || git push --force
           }
