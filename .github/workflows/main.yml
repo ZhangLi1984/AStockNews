@@ -41,10 +41,17 @@ jobs:
           # 配置Git用户信息
           git config --global user.name 'github-actions[bot]'
           git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+          
+          # 获取当前年月以构建文件名
+          YEAR_MONTH=$(date +'%Y-%m')
+          MONTH_FILE="financial_news_archive-${YEAR_MONTH}.csv"
+          
           # 将变动（即更新后的csv文件）添加到暂存区
-          git add financial_news_archive.csv
+          git add "financial_news_archive-*.csv"
+          
           # 检查是否有变动
           # 如果没有变动，`git commit` 会失败，我们通过 `|| exit 0` 来忽略这个错误
-          git commit -m "每日新闻自动更新 $(date +'%Y-%m-%d %H:%M:%S')" || exit 0
+          git commit -m "财经新闻自动更新 $(date +'%Y-%m-%d %H:%M:%S')" || exit 0
+          
           # 将提交推送到你的仓库
           git push
