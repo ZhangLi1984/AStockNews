@@ -4,7 +4,7 @@ on:
   # 使用 cron 语法，每30分钟运行一次
   # '*/30' 表示每30分钟
   schedule:
-    - cron: '*/30 * * * *'
+    - cron: '*/15 * * * *'
   # 也允许手动触发
   workflow_dispatch:
 
