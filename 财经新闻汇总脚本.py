@@ -8,14 +8,12 @@ import os
 def get_recent_financial_news():
     """
     获取多个财经新闻来源的最近一周新闻，并与已有数据合并、去重、排序后保存。
-    只保留最近一个月的新闻数据。
+    按月保存数据到不同的CSV文件中。
     """
     print("开始获取最近一周的财经新闻...")
     
     # 设置时间范围为最近7天
     seven_days_ago = datetime.now() - timedelta(days=7)
-    # 设置保留数据的时间范围为最近30天
-    thirty_days_ago = datetime.now() - timedelta(days=30)
     all_news_list = []
 
     # 1. 财新网 - 内容精选
@@ -115,11 +113,18 @@ def get_recent_financial_news():
         
     new_df = pd.concat(all_news_list, ignore_index=True)
     
-    # 尝试读取已有的存档文件
-    archive_filename = "financial_news_archive.csv"
+    # 获取当前年月
+    current_date = datetime.now()
+    current_year = current_date.year
+    current_month = current_date.month
+    
+    # 构建当月文件名
+    archive_filename = f"financial_news_archive-{current_year}-{current_month:02d}.csv"
+    
+    # 尝试读取当月的存档文件
     if os.path.exists(archive_filename):
         try:
-            print(f"\n--- 正在读取已有存档文件: {archive_filename} ---")
+            print(f"\n--- 正在读取当月存档文件: {archive_filename} ---")
             existing_df = pd.read_csv(archive_filename, encoding='utf-8-sig')
             
             # 确保时间列是日期时间格式
@@ -133,24 +138,20 @@ def get_recent_financial_news():
             print("去除重复新闻...")
             final_df = final_df.sort_values('时间', ascending=False).drop_duplicates(subset=['标题'], keep='first')
             
-            # 只保留最近30天的新闻
-            print(f"过滤数据，只保留最近30天的新闻...")
-            final_df = final_df[final_df['时间'] >= thirty_days_ago]
-            
             print(f"合并后共有 {len(final_df)} 条新闻")
         except Exception as e:
             print(f"读取或处理已有文件时出错: {e}")
             print("将只使用新抓取的数据")
             final_df = new_df
     else:
-        print("\n未找到已有存档文件，将创建新文件")
+        print(f"\n未找到当月存档文件，将创建新文件: {archive_filename}")
         final_df = new_df
     
     # 按时间倒序排序
     final_df = final_df.sort_values(by='时间', ascending=False)
     
     print(f"\n--- 所有新闻处理完毕 ---")
-    print(f"共有 {len(final_df)} 条最近一个月的新闻，正在保存到文件: {archive_filename}")
+    print(f"共有 {len(final_df)} 条当月新闻，正在保存到文件: {archive_filename}")
     
     # 保存到CSV，使用 utf-8-sig 编码确保Excel能正确显示中文
     final_df.to_csv(archive_filename, index=False, encoding='utf-8-sig')
